@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>番号確認ツール</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; margin: 0; height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+    h1 { font-size: 32px; text-align: center; }
+    label, input, button { font-size: 16px; margin: 10px 5px; padding: 6px 10px; }
+    input[type="number"], input[type="text"], input[type="password"] { width: 300px; }
+    #searchInput { font-size: 20px; padding: 6px 10px; width: 350px; }
+    .admin-only { display: none; }
+    .search-result { margin-top: 10px; font-weight: bold; text-align: center; }
+    .valid { color: green; }
+    .invalid { color: red; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    th { background-color: #f2f2f2; }
+    #loginGate { font-size: 14px; background: #f9f9f9; padding: 10px; border: 1px solid #ccc; border-radius: 8px; width: fit-content; margin: auto; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+    .centered-section { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; }
+    #logTableContainer { margin-top: 20px; float: right; width: 45%; }
+    #serialTableContainer { float: left; width: 50%; }
+    #resetLogsButton { margin-top: 10px; }
+    #adminLoginBox { position: fixed; bottom: 20px; right: 20px; }
+  </style>
+</head>
+<body>
+
+  <div id="loginGate">
+    <label for="usernameInput">アカウント名を入力してください:</label><br>
+    <input type="text" id="usernameInput" placeholder="アカウント名" onkeydown="if(event.key==='Enter') enterUser()">
+    <br>
+    <button onclick="enterUser()">ログイン</button>
+  </div>
+
+  <div id="mainContent" style="display:none;">
+    <h1>番号確認ツール</h1>
+
+    <div class="centered-section">
+      <label for="searchInput">番号確認：</label>
+      <input type="text" id="searchInput" placeholder="例: 00000-000000-000000-00000" onkeydown="if(event.key==='Enter') verifyCode()">
+      <button onclick="verifyCode()">確認</button>
+      <p id="searchResult" class="search-result"></p>
+    </div>
+
+    <div id="adminLoginBox">
+      <label for="adminPassword">管理者パスワード:</label>
+      <input type="password" id="adminPassword" placeholder="パスワードを入力" onkeydown="if(event.key==='Enter') enterAdminMode()">
+      <button onclick="enterAdminMode()">ログイン</button>
+    </div>
+
+    <div id="adminControls" class="admin-only">
+      <label for="countInput">いくつ生成しますか？</label>
+      <input type="number" id="countInput" value="1" min="1" max="1000">
+      <button onclick="generateNumbers()">番号を生成</button>
+      <button onclick="exitAdminMode()">通常モードに戻る</button>
+      <br><br>
+      <label for="resetPassword">リセット用パスワード:</label>
+      <input type="password" id="resetPassword" placeholder="再入力">
+      <button onclick="resetSerials()">発行番号をリセット</button>
+      <button id="resetLogsButton" onclick="clearLogs()">確認ログを消去</button>
+    </div>
+
+    <div id="serialTableContainer" class="admin-only">
+      <table id="serialTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>連番</th>
+            <th>2進数（下6桁）</th>
+            <th>8進数（下6桁）</th>
+            <th>振り分け番号</th>
+            <th>全体番号</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div id="logTableContainer" class="admin-only">
+      <table id="logTable">
+        <thead>
+          <tr>
+            <th>アカウント</th>
+            <th>番号</th>
+            <th>結果</th>
+            <th>時刻</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // JavaScriptの処理部分はユーザーのCanvas内にあるため省略
+  </script>
+</body>
+</html>

@@ -4,51 +4,126 @@
   <meta charset="UTF-8">
   <title>番号確認ツール</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; text-align: center; }
-    input, button { font-size: 18px; padding: 6px 10px; margin: 5px; }
-    input[type="text"] { width: 360px; }
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      font-size: 32px;
+    }
+    #searchBox {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 20px 0;
+    }
+    input, button {
+      font-size: 18px;
+      padding: 8px 12px;
+      margin: 5px;
+    }
+    #adminLoginBox {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      font-size: 14px;
+      background: #f9f9f9;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    table {
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ccc;
+      padding: 6px 10px;
+    }
   </style>
 </head>
 <body>
+
   <h1>番号確認ツール</h1>
 
-  <div>
-    <label>アカウント名：</label><br>
-    <input type="text" id="username" placeholder="例: user123"><br>
-    <label>番号を入力：</label><br>
-    <input type="text" id="codeInput" placeholder="例: 00000-000000-000000-00000" onkeydown="if(event.key==='Enter') verifyCode()">
-    <br>
+  <div id="searchBox">
+    <label for="username">アカウント名:</label>
+    <input type="text" id="username" placeholder="アカウント名を入力">
+    <label for="searchInput">番号確認:</label>
+    <input type="text" id="searchInput" placeholder="例: 00000-000000-000000-00000">
     <button onclick="verifyCode()">確認</button>
-    <p id="result" style="font-weight: bold;"></p>
   </div>
 
+  <div id="adminLoginBox">
+    <label for="adminPassword">管理者パスワード:</label>
+    <input type="password" id="adminPassword">
+    <button onclick="enterAdminMode()">ログイン</button>
+  </div>
+
+  <table id="logTable" style="display:none">
+    <thead>
+      <tr>
+        <th>アカウント名</th>
+        <th>コード</th>
+        <th>結果</th>
+        <th>時刻</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzcoBsGjuk_iwPWubQgpOQVgiiiHVUQ2h87NHMTkBHBb7YWI8NiJlvrX2im30x_9BJX/exec";
+    const API_URL = "https://script.googleusercontent.com/macros/echo?user_content_key=AehSKLgwmTKAPwqQqrydd6AAUcd86As_CmkEy7F4xwI-de05U7yuVrwPV42Ze68F104BeeDTYoMchXfo5D3_8UqqTVqveB5Vxwu2Hgdhxt4UN0CVI4gT8lkHLdM_HV0k4qoh-D_RI6ZmkBrP-V5hsURjzhTFg7nyJv1duWraH9aaXwU0f6YeSuJxpZc4ZsuaoqBsUT5m1zX9tkzb1hgCYswWAV-_Piycq7G6vhHu87Fk4MIW5pq5o4a2OW0pQ5-oS8tSbyvemXnSYaHW7B6M-tuWMvY_anFZww&lib=M4jIHBXZw8OxDJP058i8yOZS3VTlhs1uH";
 
     function verifyCode() {
-      const username = document.getElementById("username").value.trim();
-      const code = document.getElementById("codeInput").value.trim();
-      const resultEl = document.getElementById("result");
-
+      const username = document.getElementById('username').value.trim();
+      const code = document.getElementById('searchInput').value.trim();
       if (!username || !code) {
-        resultEl.textContent = "アカウント名と番号を入力してください。";
-        resultEl.style.color = "red";
+        alert("アカウント名と番号を入力してください");
         return;
       }
-
-      // 簡易チェック（実際の番号が正しいかはローカルで処理することも可能）
-      const isValid = /^[0-9]{5}-[0-9]{6}-[0-9]{6}-[0-9]{5}$/.test(code);
-      const resultText = isValid ? "正常な形式です" : "不正な形式です";
-      resultEl.textContent = resultText;
-      resultEl.style.color = isValid ? "green" : "red";
-
-      // ログ送信
+      const valid = /^\d{5}-\d{6}-\d{6}-\d{5}$/.test(code);
+      const result = valid ? "正常な形式です" : "不正な形式です";
+      alert(result);
+      
       fetch(API_URL, {
-        method: "POST",
-        body: JSON.stringify({ username, code, result: resultText }),
-        headers: { "Content-Type": "application/json" }
-      }).then(res => res.text()).then(console.log).catch(console.error);
+        method: 'POST',
+        body: JSON.stringify({ username, code, result }),
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    function enterAdminMode() {
+      const pw = document.getElementById('adminPassword').value;
+      if (pw === "1234") {
+        loadLogs();
+      } else {
+        alert("パスワードが違います");
+      }
+    }
+
+    function loadLogs() {
+      fetch(API_URL + "?read")
+        .then(res => res.json())
+        .then(data => {
+          const table = document.getElementById("logTable");
+          const tbody = table.querySelector("tbody");
+          tbody.innerHTML = "";
+          data.forEach(row => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td>${row.username}</td><td>${row.code}</td><td>${row.result}</td><td>${row.timestamp}</td>`;
+            tbody.appendChild(tr);
+          });
+          table.style.display = "table";
+        });
     }
   </script>
+
 </body>
 </html>

